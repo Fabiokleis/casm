@@ -1,6 +1,6 @@
-SRC=fasm.asm
-OBJ=fasm.o
-BIN=fasm
+SRC=casm.asm
+OBJ=casm.o
+BIN=casm
 ASSEMBLER=nasm
 ASSEMBLER_FLAGS=-g -dwarf2
 LINKER=gcc
