@@ -16,28 +16,41 @@ BITS 64
 %define P_READ 1
 %define P_MAP 2
 
+
+; registradores gerais, por padrao vamos utilizar 64 bits
 ; GPR (Registradores de proposito geral)
 ; IA-16 -> 16 bits
 ; E -> extended 32 bits - IA-32
 ; R -> re-extended 64 bits - x86-64
 
+
+; para entender como mostrar strings no console como saída
+; Example, Console Output ref 13.3.1 - x86-64 Assembly Language Programming with ubuntu
+
+; para entender como pegar os argumetos da linha de comando
 ; Command line Arguments ref 16.0 - x86-64 Assembly Language Programming with ubuntu
 ; argv -> quadword address vector
 ; rdi = argc
 ; rsi = argv
 
-; para verificar o tamanho do arquivo que vamos ler
+; para entender como trabalhar com arquivos
+; File Open Operations ref 13.5 - x86-64 Assembly Language Programming with ubuntu
+; https://fasterthanli.me/series/reading-files-the-hard-way/part-2
+
+
+; para verificar o tamanho do arquivo que vamos ler, com base na fstat e mmap
 ; size of stat struct: 144
 ; offset of st_size  : 48
 ; PROT_READ   = 0x1
 ; MAP_PRIVATE = 0x2
 
 section .data
-hw: db "contents: "
-hw_sz: equ $-hw
 new_line: db 0xa, NULL
+hw: db "Casm uma implementacao do comando cat em assembly, obvio bem mais simples!"
+hw_sz: equ $-hw
 stat_size: equ 144
-
+use_str: db "Passe pelo menos um arquivo via argv!!!"
+use_str_sz: equ $-use_str
 
 section .text 
 
@@ -45,12 +58,17 @@ global main:
 main:
     mov r12, rdi ; salva o argc
     mov r13, rsi ; salva o argv
-    mov rdi, hw
-    call print_string ; mostra o inicio do programa
+    mov rax, SYS_write ; escreve o incio do programa
+    mov rdx, hw_sz ; o tamanho da string
+    mov rsi, hw ; a string a ser mostrada
+    mov rdi, STDOUT ; o local de saída
+    syscall
+    cmp r12, 1
+    je passe_args
 print_argvs:
-    mov rdi, new_line ; coloca dentro do destination index o quebra linha e o byte nulo 
-    call print_string ; chama a funcao para mostrar a string passada via argv 
-    mov rbx, 0 ; incia em 0 o primeiro argumento
+    mov rdi, new_line
+    call print_string
+    mov rbx, 1 ; incia em 1 o primeiro argumento, pq nao queremos o argv[0]
 print_loop:
     mov rdi, qword [r13+rbx*8] ; vai para o proximo endereço de rdi que contem a argv
     call print_string ; mostra o nome do arquivo
@@ -58,10 +76,9 @@ print_loop:
     call print_string ; e mostra a quebra de linha
 
     mov rdi, qword [r13+rbx*8] ; vai para o proximo endereço de rdi que contem a argv
-    cmp rbx, 0
-    jne read_file
+    call read_file ; chamamos a rotina para mostrar o conteudo do arquivo
 
-    inc rbx ; icrementa o rbx para o proximo arg, pois no inicio printamos o argv 0
+    inc rbx ; icrementa o rbx para o proximo arg
     cmp rbx, r12 ; compara o argc com o valor contido em rbx para verificar se acabou
     jl print_loop ; se for menor ele volta 
 
@@ -69,6 +86,21 @@ example_done:
     mov rax, SYS_exit
     mov rdi, 0
     syscall
+
+; caso nao for passado pelo menos 1 argumento
+passe_args:
+    mov rdi, new_line
+    call print_string
+    mov rax, SYS_write 
+    mov rdx, use_str_sz ; o tamanho da string
+    mov rsi, use_str ; a string a ser mostrada
+    mov rdi, STDOUT ; o local de saída
+    syscall
+    mov rdi, new_line
+    call print_string
+
+    jmp example_done
+
 
 ; rotina para ler o arquivo obtido via argv, recebe o arquivo no rdi
 global read_file:
