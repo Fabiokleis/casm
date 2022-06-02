@@ -1,7 +1,10 @@
 # casm
 Uma implementação simples em assembly do comando cat do linux.
-para mais informações sobre o comando cat: man cat
+para mais informações sobre o comando cat
 
+```
+man cat
+```
 
 # referencias
 http://www.egr.unlv.edu/%7Eed/assembly64.pdf
