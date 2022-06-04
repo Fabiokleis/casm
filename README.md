@@ -49,5 +49,5 @@ https://mentebinaria.gitbook.io/assembly/a-base/syscall-no-linux
 ### Procure por syscalls neste site
 https://filippo.io/linux-syscall-table/
 
-### Como tutorial de como ler arquivos (além de ter também no livro)
+### Tutorial de como ler arquivos (além de ter também no livro)
 https://fasterthanli.me/series/reading-files-the-hard-way/part-2
